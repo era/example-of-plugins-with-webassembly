@@ -74,14 +74,14 @@ impl WasmModule {
         config.wasm_component_model(true);
         config.async_support(true);
         let engine = Engine::new(&config)
-            .map_err(|e| WasmError::GenericError(format!("{} {}", e.to_string(), path)))?;
+            .map_err(|e| WasmError::GenericError(format!("{} {}", e, path)))?;
 
         // We start off by creating a `Module` which represents a compiled form
         // of our input wasm module. In this case it'll be JIT-compiled after
         // we parse the text format.
         //could use from_binary as well
         let module = Component::from_file(&engine, path)
-            .map_err(|e| WasmError::GenericError(format!("{} {}", e.to_string(), path)))?;
+            .map_err(|e| WasmError::GenericError(format!("{} {}", e, path)))?;
 
         let mut linker = Linker::new(&engine);
 
@@ -123,7 +123,7 @@ impl WasmModule {
         instance
             .get_func(&mut store, "run")
             .unwrap()
-            .call_async(&mut store, &mut [Val::String(arg.into())], &mut result)
+            .call_async(&mut store, &[Val::String(arg.into())], &mut result)
             .await
             .map_err(|e| WasmError::GenericError(e.to_string()))?;
 
