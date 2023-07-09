@@ -1,0 +1,11 @@
+[package]
+name = "host-application"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+thiserror = "1.0.43"
+wasmtime-wasi = { git= "https://github.com/bytecodealliance/wasmtime", branch="main", features=["preview2"]}
+wasmtime = { git= "https://github.com/bytecodealliance/wasmtime", branch="main", features = ["component-model", "async"]}
+wasi-common = { git = "https://github.com/bytecodealliance/preview2-prototyping", branch = "main" }
+tokio = { version = "1.29.1", features = ["full"] }

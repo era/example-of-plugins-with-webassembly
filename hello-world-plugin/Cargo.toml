@@ -1,0 +1,11 @@
+[package]
+name = "hello-world-plugin"
+version = "0.1.0"
+edition = "2021"
+
+# In order to compile a wasi dynamic library
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+wit-bindgen = { git = "https://github.com/bytecodealliance/wit-bindgen", version = "0.8.0" }

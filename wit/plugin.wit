@@ -1,0 +1,9 @@
+package plugin:demo
+
+world plugin {
+  import host: interface {
+    log: func(param: string)
+  }
+
+  export run: func(param: string) -> string
+}
