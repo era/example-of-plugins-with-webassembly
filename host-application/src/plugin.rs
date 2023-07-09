@@ -1,15 +1,13 @@
-
 use thiserror::Error;
 use wasmtime::component::Component;
 use wasmtime::component::Linker;
-use wasmtime::{Config, Engine, Store};
 use wasmtime::component::Val;
+use wasmtime::{Config, Engine, Store};
 use wasmtime_wasi::preview2 as wasi_preview2;
 use wasmtime_wasi::preview2::WasiCtx;
 use wasmtime_wasi::preview2::WasiCtxBuilder;
 
 wasmtime::component::bindgen!({world: "plugin"});
-
 
 #[derive(Error, Debug)]
 pub enum WasmError {
@@ -29,14 +27,11 @@ struct PluginRuntime {
 }
 
 impl PluginRuntime {
-
-    pub fn new(
-
-    ) -> Self {
+    pub fn new() -> Self {
         let mut table = wasmtime_wasi::preview2::Table::new();
         Self {
             wasi_ctx: WasiCtxBuilder::new().build(&mut table).unwrap(),
-            table
+            table,
         }
     }
 }
@@ -50,8 +45,7 @@ impl crate::plugin::host::Host for PluginRuntime {
     }
 }
 
-
-// We need to impelement this "view" for 
+// We need to impelement this "view" for
 // wasi_preview2::wasi::command::add_to_linker
 // it will expose the wasi ctx to our Wasm module.
 impl wasi_preview2::WasiView for PluginRuntime {
@@ -95,10 +89,10 @@ impl WasmModule {
         Plugin::add_to_linker(&mut linker, |state: &mut PluginRuntime| state)
             .map_err(|e| WasmError::GenericError(e.to_string()))?;
 
-        
         // since we are using wasi, we need to add the functions related with it
         // wasi_preview2 is a helper that will do that for us
-        wasi_preview2::wasi::command::add_to_linker(&mut linker).map_err(|e| WasmError::GenericError(e.to_string()))?;
+        wasi_preview2::wasi::command::add_to_linker(&mut linker)
+            .map_err(|e| WasmError::GenericError(e.to_string()))?;
 
         Ok(Self {
             module,
@@ -113,20 +107,25 @@ impl WasmModule {
         // items are stored within a `Store`, and it's what we'll always be using to
         // interact with the wasm world. Custom data can be stored in stores but for
         // now we just use `()`.
-        let mut store = Store::new(
-            &self.engine,
-            PluginRuntime::new(),
-        );
+        let mut store = Store::new(&self.engine, PluginRuntime::new());
 
         // With a compiled `Module` we can then instantiate it, creating
         // an `Instance` which we can actually poke at functions on.
-        let instance =  self.linker.instantiate_async(&mut store, &self.module).await.map_err(|e| WasmError::GenericError(e.to_string()))?;
+        let instance = self
+            .linker
+            .instantiate_async(&mut store, &self.module)
+            .await
+            .map_err(|e| WasmError::GenericError(e.to_string()))?;
 
         // our result will be here
         let mut result = [Val::S32(0)];
         // let's get the function we are interested and call it
-        instance.get_func(&mut store, "run").unwrap()
-        .call_async(&mut store, &mut [Val::String(arg.into())],&mut result ).await.map_err(|e| WasmError::GenericError(e.to_string()))?;
+        instance
+            .get_func(&mut store, "run")
+            .unwrap()
+            .call_async(&mut store, &mut [Val::String(arg.into())], &mut result)
+            .await
+            .map_err(|e| WasmError::GenericError(e.to_string()))?;
 
         Ok(format!("{:?}", result))
     }
